@@ -121,7 +121,7 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'Admin2022',
-        'HOST': 'insportify3.cz5lufvg1olp.ca-central-1.rds.amazonaws.com',
+        'HOST': 'insportify-new.cz5lufvg1olp.ca-central-1.rds.amazonaws.com',
         'PORT': '5432',
     }
 }
