@@ -1,10 +1,29 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Account</title>
+</head>
 
-
-{% autoescape off %}
-Hi {{ user.first_name }},
-
-Welcome to Insportify!
-
-Please click on the link to confirm your registration,
-{{ domain }}{% url 'UserRegister:activate' uidb64=uid token=token %}
-{% endautoescape %}
+<body style="margin: 0; padding: 10px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; background: linear-gradient(135deg, #43b3f0 0%, #ff6f3d 100%); text-align: center; width: 100%; height: 100%;">
+    <div style="max-width: 550px; margin: 40px auto; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);background: white;">
+        <div style="background: linear-gradient(135deg, #43b3f0 0%, #ff6f3d 100%); padding: 40px 20px; text-align: center; color: #ffffff; border-radius: 8px 8px 0 0;margin:10px;">
+            <img src="https://insportify.com/media/images/logo.PNG" alt="Insportify Logo" style="max-height: 50px; margin-bottom: 10px;">
+            <h1 style="margin: 0; font-size: 30px; font-weight: 700; text-transform: uppercase; color: #ffffff; letter-spacing: 2px;">Verify Your Account</h1>
+        </div>
+        <div style="padding: 20px; color: #222222; line-height: 1.8; font-size: 18px; background: white;">
+            <p>Hey {{ user.first_name }},</p>
+            <p>Welcome to Insportify! Click the button below to verify your account and complete your sign-up:</p>
+            <br/>
+            <a href="{{ domain }}{% url 'UserRegister:activate' uidb64=uid token=token %}" style="display: inline-block; padding: 10px 20px; background-color: #ff6f3d; color: #ffffff; font-size: 16px; font-weight: 700; border-radius: 5px; text-decoration: none; text-align: center;" target="_blank">Verify My Account</a>
+            <br/><br/>
+            <p>If you didn’t request this verification, feel free to ignore this message.</p>
+            <p>See you in the game,</p>
+            <p>The Insportify Team <span style="font-size: 24px; vertical-align: middle;">🏅</span></p>
+        </div>
+        <div style="text-align: center; padding: 20px; color: #999999; font-size: 16px; background: white;margin-bottom:10px;border-radius: 0 0 8px 8px;">
+            <p>Brought to you with <span style="font-size: 24px; vertical-align: middle;">💪</span> by <a href="https://insportify.com" style="color: #ff6f3d; text-decoration: none;">Insportify</a></p>
+        </div>
+    </div>
+</body>
+</html>

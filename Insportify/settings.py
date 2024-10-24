@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'EventsApp',
     'UserRegister',
+    # "django_recaptcha",
     # 'background_task',
     # 'django_crontab',
 ]
@@ -192,3 +193,8 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 STRIPE_PUBLISHABLE_KEY = 'pk_live_XLuPlOoJ78Vt9iHDWqONi99z009vuKmA89'
 STRIPE_SECRET_KEY = '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'
 
+
+RECAPTCHA_PUBLIC_KEY = '6Ld8FGoqAAAAACVEtP1_hEzfCAeA_w2avdlG5Wmg'
+RECAPTCHA_PRIVATE_KEY = '6Ld8FGoqAAAAACI4bFB8k85URQd_mmduW019OtC0'
+
+RECAPTCHA_PROXY = {'http': 'http://127.0.0.1:8000', 'https': 'https://127.0.0.1:8000'}

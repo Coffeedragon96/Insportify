@@ -1,0 +1,11 @@
+.error-message {
+  font-weight: 500;
+  display: block;
+  color: #f97575;
+}
+
+
+.grecaptcha-badge {
+  position: unset !important;
+  margin: 15px auto 0 auto;
+}

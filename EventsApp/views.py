@@ -27,7 +27,7 @@ from icalendar import Calendar, Event, vCalAddress, vText
 
 from Insportify import settings
 from .forms import MultiStepForm, AvailabilityForm, LogoForm, InviteForm, NewProfileForm
-from .models import master_table, Individual, Organization, Venues, SportsCategory, SportsType, Order, User, \
+from .models import Pronoun, master_table, Individual, Organization, Venues, SportsCategory, SportsType, Order, User, \
     Availability, Logo, Extra_Loctaions, Events_PositionInfo, Secondary_SportsChoice, Invite, \
     PositionAndSkillType, SportsImage, Organization_Availability, OrderItems, Advertisement, Profile, Ad_HitCount
 import util
@@ -713,7 +713,7 @@ def user_profile(request):
     context['sec_sport_choices'] = sec_sport_choices
     context['locations'] = locations
     context['user_avaiability'] = user_avaiability
-
+    context["preferred_pronoun"] = Pronoun.objects.all()
     return render(request, 'registration/individual_view.html', context)
 
 
@@ -738,6 +738,7 @@ def user_profile_submit(request):
         context['sec_sport_choices'] = sec_sport_choices
         context['locations'] = locations
         context['user_avaiability'] = user_avaiability
+        context["preferred_pronoun"] = Pronoun.objects.all()
         return render(request, 'registration/individual_view.html', context)
     else:
 

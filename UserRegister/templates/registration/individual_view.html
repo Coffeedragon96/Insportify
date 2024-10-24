@@ -19,6 +19,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             {% endfor %}
+            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
             {% endif %}
 
 
@@ -42,14 +43,17 @@
                     <div class="card-body">
 
                         <div class="form-row p-2">
+                            <span class="error-message" id="firstNameError"></span>
                             <input type="text" class="form-control" name="first_name" placeholder="* First Name"
-                                   value="{% if individual.first_name %} {{individual.first_name}}{% endif %}"/>
+                                   value="{% if individual.first_name %} {{individual.first_name}} {% endif %}" required />
                         </div>
                         <div class="form-row p-2">
+                            <span class="error-message" id="lastNameError"></span>
                             <input type="text" class="form-control" name="last_name" placeholder="* Last Name"
                                    value="{% if individual.last_name %} {{individual.last_name}} {% endif %}"/>
                         </div>
                         <div class="form-row p-2">
+                            <span class="error-message" id="dobError"></span>
                             <input placeholder="* Birthday" class="textbox-n form-control datesingle" type="text"
                                    onfocus="(this.type='date')" onblur="(this.type='text')" name="dob"
                                    value="{% if individual.dob %} {{individual.dob}} {% endif %}"/>
@@ -61,15 +65,20 @@
                         <div class="form-row p-2">
                             <select name="pronoun" id="pronoun" class="form-select" title="pronoun">
                                 <option value="0">Choose Preferred Pronoun</option>
-                                <option value="1" {% if individual.pronouns == "1" %} selected {% endif %}>she/her/hers/herself</option>
+                                {{ preferred_pronoun }}
+                                {% for pronoun in preferred_pronoun %}
+                                <option value="{{ pronoun.id }}" {% if individual.pronouns == pronoun.id %} selected {% endif %}>{{pronoun.name}}</option>
+                                {% endfor %}
+                                {% comment %} <option value="1" {% if individual.pronouns == "1" %} selected {% endif %}>she/her/hers/herself</option>
                                 <option value="2" {% if individual.pronouns == "2" %} selected {% endif %}>he/him/his/himself</option>
                                 <option value="3" {% if individual.pronouns == "3" %} selected {% endif %}>they/them/their/theirs/themself</option>
                                 <option value="4" {% if individual.pronouns == "4" %} selected {% endif %}>others</option>
-                                <option value="5" {% if individual.pronouns == "5" %} selected {% endif %}>Prefer not to say</option>
+                                <option value="5" {% if individual.pronouns == "5" %} selected {% endif %}>Prefer not to say</option> {% endcomment %}
                             </select>
                         </div>
 
                         <div class="form-row p-2">
+                            <span class="error-message" id="interestError"></span>
                             <label>* I am interest in participating in ?</label>
                             <br>
                             <div>
@@ -137,17 +146,15 @@
 
                         </div>
                         <div class="form-row p-2">
+                            <span class="error-message" id="cityError"></span>
                             <input type="text" class="form-control" name="city" id="city" placeholder="* City"
                                    value="{% if individual.city %} {{individual.city}} {% endif %}"/>
                         </div>
                         <div class="form-row p-2">
-<!--                            {% comment %} <input type="text" class="form-control" name="province" id="province" placeholder="* Province"-->
-<!--                                   value="{% if individual.province %} {{individual.province}} {% endif %}"/> {% endcomment %}-->
+                            <span class="error-message" id="provinceError"></span>
                             <select name="province" id="province" class="form-select">
                                 <option value="0">Select Province</option>
-                                {% comment %} {% for province in provinces %}
-                                    <option {% if individual.province == province %} selected {% endif %} value="{{ province }}">{{ province }}</option>
-                                {% endfor %} {% endcomment %}
+                                
                                 <option value="British Columbia" {% if individual.province == "British Columbia" %} selected {% endif %}>British Columbia</option>
                                 <option value="Manitoba" {% if individual.province == "Manitoba" %} selected {% endif %}>Manitoba</option>
                                 <option value="New Brunswick" {% if individual.province == "New Brunswick" %} selected {% endif %}>New Brunswick</option>
@@ -163,10 +170,10 @@
                             </select>
                         </div>
                         <div class="form-row p-2">
+                            <span class="error-message" id="countryError"></span>
                             <select name="country" id="country" class="form-select">
                                 <option value="0">Select Country</option>
                                 <option value="Canada" {% if individual.country == "Canada" %} selected {% endif %}>Canada</option>
-
                             </select>
                         <div class="form-row p-2 text-center">
                             <div id="input_fields_wrap">
@@ -216,6 +223,7 @@
 
                         </div>
                         <div class="form-row p-2">
+                            <span class="error-message" id="sportError"></span>
                             <select name='sport_type' id="sports" class="form-select"
                                     aria-label=".form-select-lg example">
                                 <option value="" selected>* Choose Sport</option>
@@ -284,6 +292,7 @@
                         <div id="availability_status">
 
                         </div>
+                        <span class="error-message" id="availabilityError"></span>
                         <div id="add_avail_div" style="{% if user_avaiability %} display:none {% endif %}">
                             <div class="form-group row p-2">
                                 <div class="col-md-4">
@@ -382,7 +391,7 @@
 
         </form>
         {% if profile.is_master %}
-        <div class="p-2 text-center">
+        {% comment %} <div class="p-2 text-center">
             <input type="button" class="btn btn-danger" id="btn_delete_account"
                    value="Delete Account" data-bs-toggle="modal" data-bs-target="#delete_modal"/>
         </div>
@@ -408,7 +417,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> {% endcomment %}
         {% else %}
         <div class="p-2 text-center">
             <input type="button" class="btn btn-danger" id="btn_delete_profile"
@@ -917,6 +926,115 @@ $("#position").change(function () {
         });
     });
 
+    function validation_error_message(field_name, error_field_id, error_message, isValid, firstErrorField, isValid) {
+        var field = $("input[name='" + field_name + "']");
+        if(field.val() === ""){
+            $(error_field_id).text(error_message);
+            field.addClass("error");
+            isValid = false;
+            if (firstErrorField === "") {
+                return field, isValid;
+            }
+        }
+        return firstErrorField, isValid;
+    }
+
+    function first_tab_validation() {
+        // Clear previous error messages
+        var isValid = true;
+        var firstErrorField = "";
+        $(".error-message").text("");
+        $("input").removeClass("error");
+
+        var first_name = $("input[name='first_name']");
+        var last_name = $("input[name='last_name']");
+        if (first_name.val() === last_name.val()) {
+            $("#firstNameError").text("First name and last name cannot be the same.");
+        }
+
+        firstErrorField, isValid = validation_error_message("first_name", "#firstNameError", "First name is required.", isValid, firstErrorField);
+        firstErrorField, isValid = validation_error_message("last_name", "#lastNameError", "Last name is required.", isValid, firstErrorField);
+        firstErrorField, isValid = validation_error_message("dob", "#dobError", "DOB is required.", isValid, firstErrorField);
+
+        var participation_interest1 = $("input[name='participation_interest1']");
+        var participation_interest2 = $("input[name='participation_interest2']");
+        var participation_interest3 = $("input[name='participation_interest3']");
+        if(!participation_interest1.is(":checked") && !participation_interest2.is(":checked") && !participation_interest3.is(":checked")){
+            $("#interestError").text("At least one interest must be selected.");
+            $("input[name='participation_interest1'], input[name='participation_interest2'], input[name='participation_interest3']").addClass("error");
+            isValid = false;
+            if (firstErrorField === "") {
+                firstErrorField = participation_interest1;
+            }
+        }
+
+        if (isValid == false){
+            firstErrorField.focus();
+        }
+        return isValid;
+    }
+
+    function second_tab_validation() {
+        // Clear previous error messages
+        var isValid = true;
+        var firstErrorField = "";
+        $(".error-message").text("");
+        $("input").removeClass("error");
+
+        var locationCount = $("#user_location_table table tr").length;
+        if (locationCount == 0) {
+            firstErrorField, isValid = validation_error_message("city", "#cityError", "City name is required.", isValid, firstErrorField);
+            firstErrorField, isValid = validation_error_message("province", "#provinceError", "Province is required.", isValid, firstErrorField);
+            firstErrorField, isValid = validation_error_message("country", "#countryError", "Country is required.", isValid, firstErrorField);
+
+            $("#cityError").text("Please add at least one location.");
+            isValid = false;
+        }
+
+        if (isValid == false){
+            firstErrorField.focus();
+        }
+        return isValid;
+    }
+
+    function third_tab_validation() {
+        // Clear previous error messages
+        var isValid = true;
+        var firstErrorField = "";
+        $(".error-message").text("");
+        $("input").removeClass("error");
+
+        var sportsCount = $("#sports_position_table table tr").length;
+        if (sportsCount == 0) {
+            $("#sportError").text("Please add at least one sport.");
+            isValid = false;
+        }
+
+        if (isValid == false){
+            firstErrorField.focus();
+        }
+        return isValid;
+    }
+
+    function fourth_tab_validation() {
+        // Clear previous error messages
+        var isValid = true;
+        var firstErrorField = "";
+        $(".error-message").text("");
+        $("input").removeClass("error");
+
+        var sportsCount = $("#availability_table table tr").length;
+        if (sportsCount == 0) {
+            $("#availabilityError").text("Please add at least one availability time.");
+            isValid = false;
+        }
+
+        if (isValid == false){
+            firstErrorField.focus();
+        }
+        return isValid;
+    }
+
     $(document).ready(function () {
         var tab1 = $("#tab-1");
         var tab2 = $("#tab-2");
@@ -937,6 +1055,10 @@ $("#position").change(function () {
             $("#step4").removeClass("active");
         });
         $("li#step2").click(function () {
+            var isValid = first_tab_validation();
+            if (isValid == false) {
+                return;
+            }
             tab1.hide();
             tab2.show();
             tab3.hide();
@@ -962,6 +1084,10 @@ $("#position").change(function () {
         });
 
         $("#next-tab-1").click(function () {
+            var isValid = first_tab_validation();
+            if (isValid == false) {
+                return;
+            }
             var tab1 = $("#tab-1");
             var tab2 = $("#tab-2");
             var tab3 = $("#tab-3");
@@ -974,6 +1100,10 @@ $("#position").change(function () {
         });
 
         $("#next-tab-2").click(function(){
+            var isValid = second_tab_validation();
+            if (isValid == false) {
+                return;
+            }
             var tab1 = $("#tab-1");
             var tab2 = $("#tab-2");
             var tab3 = $("#tab-3");
@@ -986,6 +1116,10 @@ $("#position").change(function () {
         });
 
         $("#next-tab-3").click(function () {
+            var isValid = third_tab_validation();
+            if (isValid == false) {
+                return;
+            }
             var tab1 = $("#tab-1");
             var tab2 = $("#tab-2");
             var tab3 = $("#tab-3");

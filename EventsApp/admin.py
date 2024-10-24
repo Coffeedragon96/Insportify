@@ -2,7 +2,7 @@ from django.contrib import admin
 from EventsApp.models import master_table, User, \
     Individual, Organization, SportsCategory, SportsType, Venues, Availability, Order, Logo, Extra_Loctaions, \
     Events_PositionInfo, Secondary_SportsChoice, OrderItems, PositionAndSkillType, SportsImage, \
-    Organization_Availability, Advertisement, Profile, Ad_HitCount
+    Organization_Availability, Advertisement, Profile, Ad_HitCount, Pronoun
 
 admin.site.register(master_table)
 # admin.site.register(User)
@@ -12,6 +12,7 @@ admin.site.register(Individual)
 admin.site.register(Organization)
 admin.site.register(Logo)
 admin.site.register(SportsImage)
+admin.site.register(Pronoun)
 
 
 class UserAdmin(admin.ModelAdmin):

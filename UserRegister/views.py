@@ -17,6 +17,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
 from .tokens import account_activation_token, pass_reset_code
 from django.core.mail import EmailMessage
+from django.utils.html import strip_tags
 
 
 def register(request):
@@ -53,20 +54,20 @@ class individual_register(CreateView):
     template_name = 'registration/individual_register.html'
 
     def form_valid(self, form):
-        localhost = '127.0.0.1:8000'
         if form.is_valid():
             user = form.save()
             user.is_active = False
             user.is_mvp = False  # self.request.POST.get('is_mvp') == "on"
             user.save()
 
-            is_localhost = get_current_site(self.request).domain == localhost
+            is_localhost = get_current_site(self.request).domain in ['localhost:8000', '127.0.0.1:8000']
 
             if is_localhost:
                 ssl = 'http://'
             else:
                 ssl = 'https://'
             domain = ''.join([ssl, get_current_site(self.request).domain])
+
             email = EmailMessage(
                 'Welcome to Insportify!',
                 render_to_string('acc_active_email.html', {
@@ -77,14 +78,16 @@ class individual_register(CreateView):
                 }),
                 to=[form.cleaned_data.get('email')]
             )
+            email.content_subtype = 'html'
             if is_localhost:
                 print(email.body)
+                email.send()
             else:
                 print(email.body)
                 email.send()
             messages.success(self.request,
                              'Account created! A verification email has been sent to your email address. Please confirm your email address to complete the registration.')
-        return redirect('/users/individual_register')
+            return redirect('/users/individual_register')
 
 
 class mvp_register(CreateView):
@@ -177,6 +180,13 @@ def login_request(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
+
+                # Handle Remember Me
+                if 'remember_me' in post:
+                    request.session.set_expiry(7 * 24 * 60 * 60)  # 7 days
+                else:
+                    request.session.set_expiry(0)  # Browser close session expiry
+
                 return redirect('/')
             else:
                 messages.error(request, "Invalid email or password")
