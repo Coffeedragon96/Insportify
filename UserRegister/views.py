@@ -87,7 +87,7 @@ class individual_register(CreateView):
                 email.send()
             messages.success(self.request,
                              'Account created! A verification email has been sent to your email address. Please confirm your email address to complete the registration.')
-            return redirect('/users/individual_register')
+        return redirect('/users/individual_register')
 
 
 class mvp_register(CreateView):
