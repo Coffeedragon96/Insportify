@@ -11,7 +11,7 @@
             <h3 class="mx-auto text-center fw-light">Create Event</h3>
             <hr>
         </div>
-        <form id="msform" action="{% url 'EventsApp:multistep'%}" method="post">
+        <form id="msform" action="{% url 'EventsApp:multistep'%}" method="post" onsubmit="return validateRecaptcha();">
             {% csrf_token %}
             {% if messages %}
             {% for message in messages %}
@@ -131,15 +131,17 @@
                             <div>
                             <label for="Male"><input type="radio" id="Male" name="gender" value="Male" {% if values.gender == 'Male' %}checked{% endif %}> Male Only </input></label>
                             <label for="Female"><input type="radio" id="Female" name="gender" value="Female" {% if values.gender == 'Female' %}checked{% endif %}> Female Only </input></label>
-                            <label for="Coed"><input type="radio" id="Coed" name="gender" value="Coed" {% if values.gender == 'Coed' %}checked{% endif %}> Coed </input></label>
+                            <label for="Coed"><input type="radio" id="Coed" name="gender" value="Coed" {% if values.gender == 'Coed' or values.gender == None %}checked{% endif %}> Coed </input></label>
                             </div>
                         </div>
-                        <div class="form-row p-2">
-                            <label>* Is this a recurring event? &nbsp &nbsp</label>
-                            <br>
-                            <label for="chkYes"><input type="radio" value="Yes" id="chkYes" name="recurring_event" {% if values.recurring_event == 'Yes' %}checked="checked"{% endif %}>Yes</input></label>
-                            <label for="chkNo"><input type="radio" value="No" id="chkNo" name="recurring_event" {% if values.recurring_event == 'No' %}checked="checked"{% endif %}> No </input></label>
-                        </div>
+                        {% if not user.is_individual or user.is_individual and user.is_mvp %}
+                          <div class="form-row p-2">
+                              <label>* Is this a recurring event? &nbsp &nbsp</label>
+                              <br>
+                              <label for="chkYes"><input type="radio" value="Yes" id="chkYes" name="recurring_event" {% if values.recurring_event == 'Yes' %}checked="checked"{% endif %}>Yes</input></label>
+                              <label for="chkNo"><input type="radio" value="No" id="chkNo" name="recurring_event" {% if values.recurring_event == 'No' %}checked="checked"{% endif %}> No </input></label>
+                          </div>
+                        {% endif %}
                         <div class="form-row p-2" id="fields_recurring" style="display:None">
                             <label>* Which days does the event occur &nbsp &nbsp</label>
                             <select class="select2 form-control" style="width: 100%" id="recurring_selection"
@@ -406,6 +408,8 @@
                                    placeholder="Area Code" value="{{values.zip_code}}" readonly/>
                         </div>
                         <div class="form-row p-2 text-center">
+                          <span style="color: red;" id="recaptchaError"></span>
+                          <div class="g-recaptcha mt-3" data-sitekey="6LdErW8qAAAAAIfW6u6pfHH1RucTcAHEBcv95tOS"></div>
 
                             <input type="submit" name="submit" class="submit action-button btn btn-primary"
                                    value="Submit" style="width: 90px;"/>
@@ -416,6 +420,19 @@
         </form>
     </div>
 </div>
+
+<script>
+  function validateRecaptcha() {
+      const response = grecaptcha.getResponse();
+      if (response.length === 0) {
+        document.getElementById("recaptchaError").innerHTML = "Please verify you are not a robot.";
+
+        return false; // Prevent form submission
+      }
+      return true; // Allow form submission
+    }
+</script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>

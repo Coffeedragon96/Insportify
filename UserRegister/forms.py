@@ -5,6 +5,7 @@ from django.db import transaction
 from EventsApp.models import User
 from django.contrib.auth import get_user_model
 from EventsApp.models import Individual, Organization, Profile
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -31,6 +32,14 @@ class IndividualSignUpForm(UserCreationForm):
             "last_name",
             "phone",
         )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        first_name = cleaned_data.get("first_name")
+        last_name = cleaned_data.get("last_name")
+        if first_name == last_name:
+            self.add_error('first_name', ["First name and last name cannot be the same."])
+        return cleaned_data
 
     @transaction.atomic
     def save(self):

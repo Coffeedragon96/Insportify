@@ -11,7 +11,7 @@
                 Registration</h3>
             <div class="card-body">
                 <div class="card-body">
-                    <form action="{% url 'UserRegister:individual_register' %}" method="POST" novalidate id="register-form">
+                    <form action="{% url 'UserRegister:individual_register' %}" method="POST" novalidate id="register-form" onsubmit="return validateRecaptcha();">
                         {% csrf_token %}
                         {% if messages %}
                         {% for message in messages %}
@@ -30,7 +30,9 @@
                             {% endfor %}
                             {% endfor %}
                             <div class="text-center mb-3">
-                            <input data-sitekey="6Ld8FGoqAAAAACVEtP1_hEzfCAeA_w2avdlG5Wmg"  data-callback='onSubmit' class="g-recaptcha btn my-3 shadow rounded text-white" style="background: #ff6f3d;" data-action='submit' value="Register" type="submit" />
+                            <span style="color: red;" id="recaptchaError"></span>
+                            <div class="g-recaptcha mt-3" data-sitekey="6LdErW8qAAAAAIfW6u6pfHH1RucTcAHEBcv95tOS"></div>
+                            <input class="btn my-3 shadow rounded text-white" style="background: #ff6f3d;" value="Register" type="submit" />
                             </div>
                         </div>
                     </form>
@@ -41,9 +43,16 @@
 </div>
 
 <script>
-    function onSubmit(token) {
-        document.getElementById("register-form").submit();
-    }
+    function validateRecaptcha() {
+        const response = grecaptcha.getResponse();
+        if (response.length === 0) {
+          document.getElementById("recaptchaError").innerHTML = "Please verify you are not a robot.";
+
+          return false; // Prevent form submission
+        }
+        return true; // Allow form submission
+      }
 </script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 {% endblock %}
 

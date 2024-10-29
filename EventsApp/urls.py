@@ -67,6 +67,8 @@ urlpatterns = [
          name='fetch_user_locations'),
     path('delete_user_location/', views.delete_user_location,
          name='delete_user_location'),
+     path('set_home_location/', views.set_home_location,
+         name='set_home_location'),
     path('get_venue/', views.get_venue_details, name='get_venue'),
     path('add_availability/', views.add_availability, name='add_availability'),
     # TODO : Check why this was deleted in master

@@ -65,16 +65,16 @@
                         <div class="form-row p-2">
                             <select name="pronoun" id="pronoun" class="form-select" title="pronoun">
                                 <option value="0">Choose Preferred Pronoun</option>
-                                {{ preferred_pronoun }}
                                 {% for pronoun in preferred_pronoun %}
-                                <option value="{{ pronoun.id }}" {% if individual.pronouns == pronoun.id %} selected {% endif %}>{{pronoun.name}}</option>
+                                <option value="{{ pronoun.id }}" {% if individual.pronouns == pronoun.id|stringformat:"i" %} selected {% endif %}>{{pronoun.name}}</option>
                                 {% endfor %}
-                                {% comment %} <option value="1" {% if individual.pronouns == "1" %} selected {% endif %}>she/her/hers/herself</option>
-                                <option value="2" {% if individual.pronouns == "2" %} selected {% endif %}>he/him/his/himself</option>
-                                <option value="3" {% if individual.pronouns == "3" %} selected {% endif %}>they/them/their/theirs/themself</option>
-                                <option value="4" {% if individual.pronouns == "4" %} selected {% endif %}>others</option>
-                                <option value="5" {% if individual.pronouns == "5" %} selected {% endif %}>Prefer not to say</option> {% endcomment %}
                             </select>
+                        </div>
+
+                        <div class="form-row p-2">
+                            <span class="error-message" id="medicalInfoError"></span>
+                            <input type="text" class="form-control" name="medical_info" placeholder="any pertinent medical information you think important"
+                                   value="{% if individual.medical_info %} {{individual.medical_info}} {% endif %}"/>
                         </div>
 
                         <div class="form-row p-2">
@@ -185,8 +185,19 @@
                             <h5>Your Saved Locations</h5>
                             <div id="user_location_table">
                                 <table class="table table-striped">
+                                    <thead>
+                                <tr>
+                                    <th>HOME LOCATION</th>
+                                    <th>CITY</th>
+                                    <th>PROVINCE</th>
+                                    <th>COUNTRY</th>
+                                    <th>ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody id="location_rows">
                                 {% for item in locations %}
                                 <tr>
+                                    <td><input type="radio" name="location_id" value="{{item.id}}" {% if item.is_home %} checked {% endif %} onclick="set_home_location({{item.id}})"></td>
                                     <td>{{item.city}}</td>
                                     <td>{{item.province}}</td>
                                     <td>{{item.country}}</td>
@@ -198,6 +209,7 @@
                                     </td>
                                 </tr>
                                 {% endfor %}
+                            </tbody>
                             </table>
                             </div>
                         </div>
@@ -572,6 +584,9 @@
         var selected_province_text = document.getElementById("province").value;
         var selected_country_text = document.getElementById("country").value;
 
+        $(".error-message").text("");
+        $("input").removeClass("error");
+
         $.ajax({
             type: "POST",
             url: '{% url "EventsApp:add_user_locations" %}',
@@ -602,9 +617,11 @@
             async: false,
             url: '{% url "EventsApp:fetch_user_locations" %}',
             success: function (data) {
-                let html_data = `<table class="table table-striped">`;
+                let html_data = ``;
                 data.forEach(function (data) {
                     html_data += `<tr>`;
+                    {% comment %} html_data += `<td><input type="checkbox" name="location_id" id="location_id" value=""></td>`; {% endcomment %}
+                    html_data += `<td><input type="radio" name="location_id" value="${data.pk}" ${data.is_home ? "checked" : ""} onclick="set_home_location(${data.pk})"></td>`;
                     html_data += `<td>${data.city}</td>`;
                     html_data += `<td>${data.province}</td>`;
                     html_data += `<td>${data.country}</td>`;
@@ -615,8 +632,7 @@
                     html_data += `</td>`;
                     html_data += `</tr>`;
                 });
-                html_data += `</table>`;
-                let tableData = document.getElementById("user_location_table");
+                let tableData = document.getElementById("location_rows");
                 tableData.innerHTML = html_data;
             }
         });
@@ -628,6 +644,26 @@
             url: '{% url "EventsApp:delete_user_location" %}',
             data: {
                 'id': user_location_id,
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+            },
+            success: function (data) {
+                let html_data = `<div class="alert alert-warning alert-dismissible fade show" role="alert">`;
+                html_data += `${data["status"]}`;
+                html_data += `<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+                html_data += `</div>`;
+                let status = document.getElementById("location_status");
+                status.innerHTML = html_data;
+                fetchUserLocations();
+            }
+        });
+    }
+
+    function set_home_location(user_location_id) {
+        $.ajax({
+            type: "POST",
+            url: '{% url "EventsApp:set_home_location" %}',
+            data: {
+                'location_id': user_location_id,
                 'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
             },
             success: function (data) {
@@ -662,6 +698,39 @@
             }
         });
     });
+
+    $("#position").change(function () {
+        var selected_position_value = $("#position option:selected");
+        var selected_position_text = selected_position_value.text();
+        var selected_type_value = $("#sports option:selected");
+        var selected_type_text = selected_type_value.text();
+        console.log(selected_position_text, selected_type_text);
+            $.ajax({
+                type: "POST",
+                url: '{% url "EventsApp:get_selected_sports_skill" %}',
+                data: {
+                    'selected_position_text': selected_position_text,
+                    'selected_type_text': selected_type_text,
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                success: function (data) {
+                    if (data.length == 1) {
+                        console.log(data[0].skill_type);
+                        var html_data = '<option value="" disabled>* Choose Skill</option>';
+                        html_data += `<option value="${data[0].skill_type}" selected>${data[0].skill_type}</option>`    
+                        $("#skill").html(html_data);
+                        return;
+                    }
+
+                    var html_data = '<option value="" selected disabled>* Choose Skill</option>';
+                    data.forEach(function (data) {
+                        html_data += `<option value="${data.skill_type}">${data.skill_type}</option>`;
+                    });
+                    console.log(html_data);
+                    $("#skill").html(html_data);
+                }
+            });
+        });
 
 
     $("#add_positions").click(function (e) {
@@ -901,30 +970,7 @@ function all_day_checked(){
 }
 
 
-$("#position").change(function () {
-    var selected_position_value = $("#position option:selected");
-    var selected_position_text = selected_position_value.text();
-    var selected_type_value = $("#sports option:selected");
-    var selected_type_text = selected_type_value.text();
-    console.log(selected_position_text, selected_type_text);
-        $.ajax({
-            type: "POST",
-            url: '{% url "EventsApp:get_selected_sports_skill" %}',
-            data: {
-                'selected_position_text': selected_position_text,
-                'selected_type_text': selected_type_text,
-                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
-            },
-            success: function (data) {
-                let html_data = '<option value="" selected disabled>* Choose Skill</option>';
-                data.forEach(function (data) {
-                    html_data += `<option value="${data.skill_type}">${data.skill_type}</option>`
-                });
-                console.log(html_data);
-                $("#skill").html(html_data);
-            }
-        });
-    });
+
 
     function validation_error_message(field_name, error_field_id, error_message, isValid, firstErrorField, isValid) {
         var field = $("input[name='" + field_name + "']");
@@ -984,16 +1030,21 @@ $("#position").change(function () {
         var locationCount = $("#user_location_table table tr").length;
         if (locationCount == 0) {
             firstErrorField, isValid = validation_error_message("city", "#cityError", "City name is required.", isValid, firstErrorField);
-            firstErrorField, isValid = validation_error_message("province", "#provinceError", "Province is required.", isValid, firstErrorField);
-            firstErrorField, isValid = validation_error_message("country", "#countryError", "Country is required.", isValid, firstErrorField);
+            // firstErrorField, isValid = validation_error_message("province", "#provinceError", "Province is required.", isValid, firstErrorField);
+            // firstErrorField, isValid = validation_error_message("country", "#countryError", "Country is required.", isValid, firstErrorField);
 
             $("#cityError").text("Please add at least one location.");
             isValid = false;
+            return isValid;
         }
 
-        if (isValid == false){
-            firstErrorField.focus();
+        var cityValue = $("input[name='city']").val();
+        console.log(cityValue);
+        if (cityValue) {
+            $("#cityError").text("Please finish adding your locations or remove city");
+            isValid = false;
         }
+
         return isValid;
     }
 
@@ -1008,10 +1059,6 @@ $("#position").change(function () {
         if (sportsCount == 0) {
             $("#sportError").text("Please add at least one sport.");
             isValid = false;
-        }
-
-        if (isValid == false){
-            firstErrorField.focus();
         }
         return isValid;
     }
@@ -1035,6 +1082,19 @@ $("#position").change(function () {
         return isValid;
     }
 
+    function hide_tabs_other_then_current(currentTabNumber) {
+        $("#tab-1, #tab-2, #tab-3, #tab-4").hide();
+        $("#tab-" + currentTabNumber).show();
+
+        $("#step1, #step2, #step3, #step4").removeClass("active");
+        for (var i = 1; i <= 4; i++) {
+            if (i <= currentTabNumber) {
+                $("#step" + i).addClass("active");
+                continue;
+            }
+        }
+    }
+
     $(document).ready(function () {
         var tab1 = $("#tab-1");
         var tab2 = $("#tab-2");
@@ -1045,126 +1105,88 @@ $("#position").change(function () {
         tab4.hide();
 
         $("li#step1").click(function () {
-            tab1.show();
-            tab2.hide();
-            tab3.hide();
-            tab4.hide();
-            $("#step1").addClass("active");
-            $("#step2").removeClass("active");
-            $("#step3").removeClass("active");
-            $("#step4").removeClass("active");
+            hide_tabs_other_then_current(1);
         });
+        
         $("li#step2").click(function () {
             var isValid = first_tab_validation();
             if (isValid == false) {
+                hide_tabs_other_then_current(1);
                 return;
             }
-            tab1.hide();
-            tab2.show();
-            tab3.hide();
-            tab4.hide();
-            $("#step2").addClass("active");
-            $("#step3").removeClass("active");
-            $("#step4").removeClass("active");
+            hide_tabs_other_then_current(2);
         });
+        
         $("li#step3").click(function () {
-            tab1.hide();
-            tab2.hide();
-            tab3.show();
-            tab4.hide();
-            $("#step3").addClass("active");
-            $("#step4").removeClass("active");
+            var isValid = first_tab_validation();
+            console.log(isValid);
+            if (isValid == false) {
+                hide_tabs_other_then_current(1);
+                return;
+            }
+            var isValid = second_tab_validation();
+            if (isValid == false) {
+                hide_tabs_other_then_current(2);
+                return;
+            }
+            hide_tabs_other_then_current(3);
         });
         $("li#step4").click(function () {
-            tab1.hide();
-            tab2.hide();
-            tab3.hide();
-            tab4.show();
-            $("#step4").addClass("active");
+            var isValid = first_tab_validation();
+            if (isValid == false) {
+                hide_tabs_other_then_current(1);
+                return;
+            }
+            var isValid = second_tab_validation();
+            if (isValid == false) {
+                hide_tabs_other_then_current(2);
+                return;
+            }
+            var isValid = third_tab_validation();
+            if (isValid == false) {
+                hide_tabs_other_then_current(3);
+                return;
+            }
+            hide_tabs_other_then_current(4);
         });
 
         $("#next-tab-1").click(function () {
             var isValid = first_tab_validation();
             if (isValid == false) {
+                hide_tabs_other_then_current(1);
                 return;
             }
-            var tab1 = $("#tab-1");
-            var tab2 = $("#tab-2");
-            var tab3 = $("#tab-3");
-            var tab4 = $("#tab-4");
-            tab1.hide();
-            tab2.show();
-            tab3.hide();
-            tab4.hide();
-            $("#step2").addClass("active");
+            hide_tabs_other_then_current(2);
         });
 
         $("#next-tab-2").click(function(){
             var isValid = second_tab_validation();
             if (isValid == false) {
+                hide_tabs_other_then_current(2);
                 return;
             }
-            var tab1 = $("#tab-1");
-            var tab2 = $("#tab-2");
-            var tab3 = $("#tab-3");
-            var tab4 = $("#tab-4");
-            tab1.hide();
-            tab2.hide();
-            tab3.show();
-            tab4.hide();
-            $("#step3").addClass("active");
+            hide_tabs_other_then_current(3);
         });
 
         $("#next-tab-3").click(function () {
             var isValid = third_tab_validation();
             if (isValid == false) {
+                hide_tabs_other_then_current(3);
                 return;
             }
-            var tab1 = $("#tab-1");
-            var tab2 = $("#tab-2");
-            var tab3 = $("#tab-3");
-            var tab4 = $("#tab-4");
-            tab1.hide();
-            tab2.hide();
-            tab3.hide();
-            tab4.show();
-            $("#step4").addClass("active");
+            hide_tabs_other_then_current(4);
         });
 
         $("#previous-tab-2").click(function () {
-            var tab1 = $("#tab-1");
-            var tab2 = $("#tab-2");
-            var tab3 = $("#tab-3");
-            var tab4 = $("#tab-4");
-            tab1.show();
-            tab2.hide();
-            tab3.hide();
-            tab4.hide();
-            $("#step2").removeClass("active");
+            hide_tabs_other_then_current(1);
         });
 
         $("#previous-tab-3").click(function () {
-            var tab1 = $("#tab-1");
-            var tab2 = $("#tab-2");
-            var tab3 = $("#tab-3");
-            var tab4 = $("#tab-4");
-            tab1.hide();
-            tab2.show();
-            tab3.hide();
-            tab4.hide();
-            $("#step3").removeClass("active");
+            hide_tabs_other_then_current(2);
         });
 
         $("#previous-tab-4").click(function () {
-            var tab1 = $("#tab-1");
-            var tab2 = $("#tab-2");
-            var tab3 = $("#tab-3");
-            var tab4 = $("#tab-4");
-            tab1.hide();
-            tab2.hide();
-            tab3.show();
-            tab4.hide();
-            $("#step4").removeClass("active");
+            hide_tabs_other_then_current(3);
         });
 
     });

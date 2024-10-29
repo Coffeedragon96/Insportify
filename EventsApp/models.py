@@ -90,6 +90,7 @@ class Individual(models.Model):
     sports_type = models.CharField(max_length=50, null=True)
     sports_position = models.CharField(max_length=50, null=True)
     sports_skill = models.CharField(max_length=50, null=True)
+    medical_info = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.first_name
@@ -284,12 +285,25 @@ class Events_PositionInfo(models.Model):
 
 
 class Extra_Loctaions(models.Model):
+    """
+    This model is for storing the locations of the user
+
+    Attributes:
+        profile: The profile of the user
+        street: The street of the location
+        city: The city of the location
+        province: The province of the location
+        country: The country of the location
+        zipcode: The zipcode of the location
+        is_home: Whether the location is the home location of the user
+    """
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     street = models.CharField(max_length=300, blank=True, null=True)
     city = models.CharField(max_length=50, blank=True, null=True)
     province = models.CharField(max_length=100, blank=True, null=True)
     country = models.CharField(max_length=250, blank=True, null=True)
     zipcode = models.CharField(max_length=100, blank=True, null=True)
+    is_home = models.BooleanField(default=False)
 
     def __str__(self):
         return self.profile.name + " Location_" + str(self.pk)
@@ -383,3 +397,8 @@ class Pronoun(models.Model):
 
     def __str__(self):
         return str(self.id) + " " + self.name
+    
+    class Meta:
+        verbose_name = "Pronoun"
+        verbose_name_plural = "Pronouns"
+        ordering = ['id']

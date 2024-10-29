@@ -18,6 +18,8 @@ from django.template.loader import render_to_string
 from .tokens import account_activation_token, pass_reset_code
 from django.core.mail import EmailMessage
 from django.utils.html import strip_tags
+from django.contrib.sessions.models import Session
+from django.utils import timezone
 
 
 def register(request):
@@ -186,6 +188,15 @@ def login_request(request):
                     request.session.set_expiry(7 * 24 * 60 * 60)  # 7 days
                 else:
                     request.session.set_expiry(0)  # Browser close session expiry
+
+                # Invalidate existing session for the user if any new session is created
+                user_sessions = Session.objects.filter(expire_date__gte=timezone.now())
+    
+                # Loop through each session and delete it, except the current one
+                for session in user_sessions:
+                    session_data = session.get_decoded()
+                    if session_data.get('_auth_user_id') == str(user.id) and session.session_key != request.session.session_key:
+                        session.delete()
 
                 return redirect('/')
             else:

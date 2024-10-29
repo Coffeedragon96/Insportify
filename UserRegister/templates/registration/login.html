@@ -10,7 +10,7 @@
              style="background: linear-gradient(170deg, rgba(71,176,239,1) 35%, rgba(13,223,246,1) 100%);">
             <div class="card-body px-lg-5 py-lg-5">
                 <h4 class="card-title py-2 text-white text-center">Welcome !</h4>
-                <form method="POST">
+                <form method="POST" onsubmit="return validateRecaptcha();">
                     {% csrf_token %}
                     {% if messages %}
                     {% for message in messages %}
@@ -31,6 +31,9 @@
                         <label class="form-check-label text-white" for="remember_me">Remember me</label>
                     </div>
 
+                    <span style="color: white;" id="recaptchaError"></span>
+                    <div class="g-recaptcha mt-3" data-sitekey="6LdErW8qAAAAAIfW6u6pfHH1RucTcAHEBcv95tOS"></div>
+
                     <div class="text-center mb-3">
                         <button type="submit" class="btn my-3 shadow rounded text-white"
                                 style="background: #ff6f3d; width:100px;">Login
@@ -49,6 +52,19 @@
         </div>
     </div>
 </div>
+
+<script>
+    function validateRecaptcha() {
+        const response = grecaptcha.getResponse();
+        if (response.length === 0) {
+          document.getElementById("recaptchaError").innerHTML = "Please verify you are not a robot.";
+
+          return false; // Prevent form submission
+        }
+        return true; // Allow form submission
+      }
+</script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <script>
 // Make Placeholders title when user types something

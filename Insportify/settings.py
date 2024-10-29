@@ -14,6 +14,8 @@ from pathlib import Path
 import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from django.contrib import messages
+from dotenv import load_dotenv
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,10 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ck(g2(+&@t-o2-mssd@xbx4@+offxrv1o-c&2u-lvts2&1%g+w'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG')
 
 ALLOWED_HOSTS = ['35.182.44.234', '127.0.0.1', 'localhost', 'insportify.com:8000', 'www.insportify.com', '*.insportify.*', 'insportify.com', 'https://localhost']
 
@@ -86,11 +88,13 @@ AUTH_USER_MODEL = 'EventsApp.User'
 
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'noreply@insportify.com'
-EMAIL_HOST_PASSWORD = 'lyqsnvulnotrtsxz'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+
+print(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_HOST)
 
 # Added to confirm the csrf token does not fail for Safari on iPhone
 SESSION_COOKIE_SECURE = False
@@ -100,29 +104,15 @@ CSRF_COOKIE_SECURE = False
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-## Dev DB Configurations
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'insportify',
-#         'USER': 'postgres',
-#         'PASSWORD': 'admin',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
-
-## Prod DB Configurations
-
+## Database Configurations
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'Admin2022',
-        'HOST': 'insportify-new.cz5lufvg1olp.ca-central-1.rds.amazonaws.com',
-        'PORT': '5432',
+        'NAME': os.environ.get('DATABASE_NAME', 'insportify'),
+        'USER': os.environ.get('DATABASE_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'admin'),
+        'HOST': os.environ.get("DATABASE_HOST", 'localhost'),
+        'PORT': os.environ.get('DATABASE_PORT', '5432'),
     }
 }
 
@@ -184,17 +174,12 @@ MESSAGE_TAGS = {
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 
+############# Stripe Configurations ################
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
 
-# TEST Mode
-# STRIPE_PUBLISHABLE_KEY = 'pk_test_cBzZxJm1Sk4UFJ5i0nypvIEv00HazZHrCi'
-# STRIPE_SECRET_KEY = 'sk_test_L940ji4j5UAJZm9qmsKICL1Z00Xel3ppet'
-
-# PROD Mode
-STRIPE_PUBLISHABLE_KEY = 'pk_live_XLuPlOoJ78Vt9iHDWqONi99z009vuKmA89'
-STRIPE_SECRET_KEY = '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'
-
-
-RECAPTCHA_PUBLIC_KEY = '6Ld8FGoqAAAAACVEtP1_hEzfCAeA_w2avdlG5Wmg'
-RECAPTCHA_PRIVATE_KEY = '6Ld8FGoqAAAAACI4bFB8k85URQd_mmduW019OtC0'
+############ ReCaptcha Configurations ################
+RECAPTCHA_PUBLIC_KEY = os.environ.get('GOOGLE_RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_PRIVATE_KEY = os.environ.get('GOOGLE_RECAPTCHA_PRIVATE_KEY')
 
 RECAPTCHA_PROXY = {'http': 'http://127.0.0.1:8000', 'https': 'https://127.0.0.1:8000'}

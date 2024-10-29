@@ -22,15 +22,31 @@
 
 <div class="col-md-4 mx-auto">
   <div >
-    <form method="POST"> {% csrf_token %}
+    <form method="POST" onsubmit="return validateRecaptcha();"> {% csrf_token %}
       
       
       <div class="col-md-8 mx-auto text-center">
         {{ form }}
+
+        <span style="color: red;" id="recaptchaError"></span>
+                            <div class="g-recaptcha mt-3" data-sitekey="6LdErW8qAAAAAIfW6u6pfHH1RucTcAHEBcv95tOS"></div>
         <button type="submit" class="btn btn-primary mb-2 mt-2" >Create</button>
       </div>
     </form>
   </div>
 </div>
+
+<script>
+  function validateRecaptcha() {
+      const response = grecaptcha.getResponse();
+      if (response.length === 0) {
+        document.getElementById("recaptchaError").innerHTML = "Please verify you are not a robot.";
+
+        return false; // Prevent form submission
+      }
+      return true; // Allow form submission
+    }
+</script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 {% endblock %}

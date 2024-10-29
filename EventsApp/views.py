@@ -378,13 +378,13 @@ def ValidateUserProfileForm(request):
         pass
         # TODO: Location Validation code goes here.
 
-    if request.POST.get('province') == "0" or request.POST['province'].strip() == "":
-        messages.error(request, "Please enter Province")
-        valid = False
+    # if request.POST.get('province') == "0" or request.POST['province'].strip() == "":
+    #     messages.error(request, "Please enter Province")
+    #     valid = False
 
-    if request.POST.get('country') == "0" or request.POST['country'].strip() == "":
-        messages.error(request, "Please enter Country")
-        valid = False
+    # if request.POST.get('country') == "0" or request.POST['country'].strip() == "":
+    #     messages.error(request, "Please enter Country")
+    #     valid = False
 
     return valid
 
@@ -589,6 +589,10 @@ def modify_individual(response, individual):
         individual.sports_position = response["position"].strip() if response["position"] else ""
     if "skill" in response:
         individual.sports_skill = response["skill"].strip() if response["skill"] else ""
+    
+    if "medical_info" in response:
+        individual.medical_info = response["medical_info"].strip() if response["medical_info"] else ""
+
     return individual
 
 
@@ -611,7 +615,6 @@ def _switch_profile(user, name):
         return False
 
     curr_prof = get_profile_from_user(user)
-    # print('_switch_profile', curr_prof.name, curr_prof.active_user, curr_prof.is_master)
     if curr_prof.name == name:
         return True
 
@@ -818,13 +821,24 @@ def add_user_locations(request):
                 return JsonResponse({'status': 'Missing values!'}, safe=False)
         except Exception:
             return JsonResponse({'status': 'An error occured!'}, safe=False)
+        
+
+def set_home_location(request):
+    if request.method != "POST":
+        return JsonResponse({'status': 'Method not allowed!'}, safe=False)
+    
+    location_id = request.POST['location_id']
+    profile = get_profile_from_user(request.user)
+    Extra_Loctaions.objects.filter(profile=profile).update(is_home=False)
+    Extra_Loctaions.objects.filter(pk=location_id).update(is_home=True)
+    return JsonResponse({'status': 'Home Location updated successfully!'}, safe=False)
 
 
 def fetch_user_locations(request):
     if request.is_ajax():
         profile = get_profile_from_user(request.user)
         location_choices = Extra_Loctaions.objects.filter(profile=profile).order_by("city")
-        location_choices = list(location_choices.values("city", "province", "country", "pk"))
+        location_choices = list(location_choices.values("city", "province", "country", "pk", "is_home"))
         return JsonResponse(location_choices, safe=False)
 
 
