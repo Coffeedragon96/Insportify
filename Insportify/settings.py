@@ -94,8 +94,6 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
-print(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_HOST)
-
 # Added to confirm the csrf token does not fail for Safari on iPhone
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
