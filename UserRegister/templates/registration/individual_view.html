@@ -1027,7 +1027,7 @@ function all_day_checked(){
         $(".error-message").text("");
         $("input").removeClass("error");
 
-        var locationCount = $("#user_location_table table tr").length;
+        var locationCount = $("#user_location_table table tbody tr").length;
         if (locationCount == 0) {
             firstErrorField, isValid = validation_error_message("city", "#cityError", "City name is required.", isValid, firstErrorField);
             // firstErrorField, isValid = validation_error_message("province", "#provinceError", "Province is required.", isValid, firstErrorField);
