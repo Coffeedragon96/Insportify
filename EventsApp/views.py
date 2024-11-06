@@ -23,6 +23,7 @@ from django.utils.crypto import get_random_string
 from django.views.decorators.csrf import csrf_exempt
 from openpyxl import Workbook
 from icalendar import Calendar, Event, vCalAddress, vText
+from django.urls import reverse
 # from .tasks import delete_bots
 
 from Insportify import settings

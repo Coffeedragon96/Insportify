@@ -4,6 +4,133 @@
 {% load static %}
 
 {% block content %}
+
+<script>
+    $(document).ready(function() {
+        // Get the URL search parameters
+        const urlParams = new URLSearchParams(window.location.search);
+    
+        // Check if 'f' is set to 'true' - f means first time login
+        if (urlParams.get('f') === 'true') {
+            // Show the custom popup
+            $('#customPopup').show();
+        }
+    
+        // Close the popup when the close button is clicked
+        $('#closePopup').click(function() {
+            $('#customPopup').hide();
+        });
+    });
+</script>
+<style>
+    #customPopup {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .popup-content {
+        background: #fff;
+        padding: 2%;
+        padding-top: 2.2%;
+        border-radius: 10px;
+        width: 20%;
+        text-align: center;
+        position: relative;
+        color: #ff6f3d;
+        border: 2px solid #ff6f3d;
+    }
+
+    .popup-content p {
+        font-weight: bold;
+    }
+
+    .popup-content p span {
+        font-weight: normal;
+        color: black;
+    }
+    
+    #closePopup {
+        position: absolute;
+        top: 5px;
+        right: 15px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 25px;
+    }
+
+    @media only screen and (max-width: 600px) {
+        .popup-content {
+            width: 70%;
+            padding: 5%;
+            padding-top: 3.7%;
+        }
+    }
+
+    
+    [data-pie-index='2'] {
+      position: relative;
+      border-radius: 50%;
+      box-shadow: inset 0 0 25px 10px #a2caff;
+    }
+
+    .pie{
+        position: relative;
+        border-radius: 50%;
+        box-shadow: inset 0 0 25px 10px #a2caff;
+    }
+    
+    .fitbit-row{
+        display: flex;
+        justify-content: space-between;
+        display: none !important;
+    }
+
+    .pie, .pie svg {
+        width: 170px !important;
+        height: 170px !important;
+    }
+
+</style>
+
+<div class="row col-lg-6 col-md-12 mx-auto col-6">
+    <div class="flex progress-wrapper">
+        <input type="range" value="75" min="0" max="100" step="1" hidden>
+    </div>
+    <div class="fitbit-row">
+            <section>
+            <div class="flex info">
+            </div>
+            <div class="pie" data-pie='{ "percent": 75 }'>
+            </div>
+            </section>
+            <section>
+            <div class="flex info">
+            </div>
+            <div class="pie" data-pie='{ "percent": 15 }'>
+            </div>
+        </section>
+            <section>
+            <div class="flex info">
+            </div>
+            <div class="pie" data-pie='{ "percent": 65 }'>
+            </div>
+        </section>
+            <section>
+            <div class="flex info">
+            </div>
+            <div class="pie" data-pie='{ "percent": 100 }'>
+            </div>
+        </section>
+    </div>
+</div>
+
 <div class="row">
     <div id="user-profile" class="col-lg-6 col-md-12 mx-auto">
         <div>
@@ -457,6 +584,17 @@
             </div>
         </div>
         {% endif %}
+    </div>
+</div>
+
+<div id="customPopup" style="display: none;">
+    <div class="popup-content">
+        <span id="closePopup">&times;</span>
+        <p>Add Dependant Profile!<br><br>
+
+        <span>if you have any dependants you would like to add a profile for?</span>
+        </p>
+        <a id="addDependant" href="/create_profile" class="btn btn-primary rounded-pill label-inline" style="color:white">Add Dependant</a>
     </div>
 </div>
 
@@ -1428,6 +1566,117 @@ let selector = document.getElementById("phone");
 
 let im = new Inputmask("999-999-9999");
 im.mask(selector);
+</script>
+
+
+<style>
+
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/tomik23/circular-progress-bar@latest/docs/circularProgressBar.min.js"></script>
+
+<script>
+    window.addEventListener("DOMContentLoaded", () => {
+        // update circle when range change
+        const pie = document.querySelectorAll(".pie");
+        const range = document.querySelector('[type="range"]');
+      
+        range.addEventListener("input", (e) => {
+          pie.forEach((el, index) => {
+            const options = {
+              index: index + 1,
+              percent: e.target.value
+            };
+            circle.animationTo(options);
+          });
+        });
+      
+        // start the animation when the element is in the page view
+        const elements = [].slice.call(document.querySelectorAll(".pie"));
+        const circle = new CircularProgressBar("pie");
+      
+        // circle.initial();
+      
+        if ("IntersectionObserver" in window) {
+          const config = {
+            root: null,
+            rootMargin: "0px",
+            threshold: 0.75
+          };
+      
+          const ovserver = new IntersectionObserver((entries, observer) => {
+            entries.map((entry) => {
+              if (entry.isIntersecting && entry.intersectionRatio > 0.75) {
+                circle.initial(entry.target);
+                observer.unobserve(entry.target);
+              }
+            });
+          }, config);
+      
+          elements.map((item) => {
+            ovserver.observe(item);
+          });
+        } else {
+          elements.map((element) => {
+            circle.initial(element);
+          });
+        }
+      
+        setInterval(() => {
+          const typeFont = [100, 200, 300, 400, 500, 600, 700];
+          const colorHex = `#${Math.floor((Math.random() * 0xffffff) << 0).toString(
+            16
+          )}`;
+          const options = {
+            index: 17,
+            percent: Math.floor(Math.random() * 100 + 1),
+            colorSlice: colorHex,
+            fontColor: colorHex,
+            fontSize: `${Math.floor(Math.random() * (1.4 - 1 + 1) + 1)}rem`,
+            fontWeight: typeFont[Math.floor(Math.random() * typeFont.length)]
+          };
+          circle.animationTo(options);
+        }, 3000);
+      
+        // global configuration
+        const globalConfig = {
+          speed: 30,
+          animationSmooth: "1s ease-out",
+          strokeBottom: 5,
+          colorSlice: "#FF6D00",
+          colorCircle: "#f1f1f1",
+          round: true,
+        };
+      
+        const global = new CircularProgressBar("global", globalConfig);
+        global.initial();
+      
+        // update global example when change range
+        const pieGlobal = document.querySelectorAll(".global");
+        range.addEventListener("input", (e) => {
+          pieGlobal.forEach((el, index) => {
+            const options = {
+              index: index + 1,
+              percent: e.target.value
+            };
+            global.animationTo(options);
+          });
+        });
+      
+        document.querySelectorAll("pre code").forEach((el) => {
+          hljs.highlightElement(el);
+        });
+      
+        const infoCode = document.querySelectorAll(".info-code");
+        infoCode.forEach((info) => {
+          info.addEventListener("click", (e) => {
+            e.target.closest("section").classList.toggle("show-code");
+          });
+        });
+      });
+      
 </script>
 
 {% endblock %}

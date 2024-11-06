@@ -20,7 +20,7 @@ from django.core.mail import EmailMessage
 from django.utils.html import strip_tags
 from django.contrib.sessions.models import Session
 from django.utils import timezone
-
+from django.urls import reverse
 
 def register(request):
     return render(request, 'registration/register_final.html')
@@ -37,9 +37,9 @@ def activate(request, uidb64, token):
         user.save()
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         if user.is_individual:
-            return redirect('EventsApp:user_profile')
+            return redirect(f"{reverse('EventsApp:user_profile')}?f=true")
         elif user.is_organization:
-            return redirect('EventsApp:organization_profile')
+            return redirect(f"{reverse('EventsApp:organization_profile')}?f=true")
         # return redirect('/')
     else:
         return render(request, 'registration/invalid_acc_token.html', {})
@@ -87,8 +87,7 @@ class individual_register(CreateView):
             else:
                 print(email.body)
                 email.send()
-            messages.success(self.request,
-                             'Account created! A verification email has been sent to your email address. Please confirm your email address to complete the registration.')
+            return redirect('/users/individual_register?r=true')
         return redirect('/users/individual_register')
 
 
