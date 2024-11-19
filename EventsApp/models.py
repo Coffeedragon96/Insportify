@@ -91,6 +91,7 @@ class Individual(models.Model):
     sports_position = models.CharField(max_length=50, null=True)
     sports_skill = models.CharField(max_length=50, null=True)
     medical_info = models.TextField(blank=True, null=True)
+    school = models.CharField(max_length=50, null=True)
 
     def __str__(self):
         return self.first_name
@@ -139,6 +140,7 @@ class master_table(models.Model):
     created_by = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True)
     current_datetimes = models.CharField(max_length=500, blank=True, null=True)
     is_third_party = models.CharField(max_length=300, choices=IS_THIRD_PARTY_CHOICES, blank=True, null=True)
+    total_time = models.FloatField(blank=True, null=True)
 
     def __str__(self):
         return self.event_title
@@ -401,4 +403,17 @@ class Pronoun(models.Model):
     class Meta:
         verbose_name = "Pronoun"
         verbose_name_plural = "Pronouns"
+        ordering = ['id']
+
+
+class School(models.Model):
+    id = models.IntegerField(primary_key=True, unique=True)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return str(self.id) + " " + self.name
+    
+    class Meta:
+        verbose_name = "School"
+        verbose_name_plural = "Schools"
         ordering = ['id']

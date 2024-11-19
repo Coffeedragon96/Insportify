@@ -149,7 +149,7 @@
                             <li><a class="dropdown-item" href="{% url 'EventsApp:create_profile' %}">Create New Profile</a></li>
                             <li><hr class="dropdown-divider"></li>
                         {% endif %}
-                        {% comment %} <li><a class="dropdown-item" href="{% url 'UserRegister:register' %}">Subscription</a></li> {% endcomment %}
+                        <li><a class="dropdown-item" href="{% url 'UserRegister:subscription_view' %}">Subscription</a></li>
                     <li><a class="dropdown-item"  href="{% url 'UserRegister:logout' %}">Logout</a></li>
                 </ul>
 

@@ -10,6 +10,7 @@ from email.utils import formatdate
 
 import openpyxl
 import stripe
+from django.db.models import Sum, F
 # from background_task.models import Task
 from dateutil.parser import parser
 from django.contrib import messages
@@ -28,7 +29,7 @@ from django.urls import reverse
 
 from Insportify import settings
 from .forms import MultiStepForm, AvailabilityForm, LogoForm, InviteForm, NewProfileForm
-from .models import Pronoun, master_table, Individual, Organization, Venues, SportsCategory, SportsType, Order, User, \
+from .models import Pronoun, School, master_table, Individual, Organization, Venues, SportsCategory, SportsType, Order, User, \
     Availability, Logo, Extra_Loctaions, Events_PositionInfo, Secondary_SportsChoice, Invite, \
     PositionAndSkillType, SportsImage, Organization_Availability, OrderItems, Advertisement, Profile, Ad_HitCount
 import util
@@ -48,12 +49,12 @@ def multistep(request):
 
     profile = get_profile_from_user(request.user)
 
-    if request.user.is_individual:
+    if profile.user.is_individual:
         user_loc = Extra_Loctaions.objects.filter(profile=profile).values_list('city', flat=True)
         venues = Venues.objects.values('pk', 'vm_name', 'vm_venuecity').filter(
             vm_venuecity__in=list(user_loc)).order_by('vm_name')
     else:
-        venues = Venues.objects.values('pk', 'vm_name').order_by('vm_name')
+        venues = Venues.objects.all().values('pk', 'vm_name').order_by('vm_name')
 
     if request.method == "POST":
         # Had to remove required since some fieldsets are hidden due to pagination causing client side console errors
@@ -206,6 +207,21 @@ def multistep(request):
             obj.save()
             save_event_position_info(request, obj)
 
+
+            datetimes = obj.datetimes
+            if datetimes:
+                start_time = datetimes.split(' - ')[0].strip()
+                end_time = datetimes.split(' - ')[1].strip()
+                total_time = 0
+                if start_time and end_time:
+                    start_time = start_time.split(' ')[1].strip()
+                    end_time = end_time.split(' ')[1].strip()
+                    start_time_list = start_time.split(':')
+                    end_time_list = end_time.split(':')
+                    total_time = (int(end_time_list[0]) - int(start_time_list[0])) + ((int(end_time_list[1]) - int(start_time_list[1])) / 60)
+                    obj.total_time = total_time
+                    obj.save()
+
             # Take user to event invitation page
             messages.success(request, 'Event Created - Invite Users?')
             redirect_url = f'/invite/' + str(master_table.objects.last().id) + '/'
@@ -243,11 +259,11 @@ def ValidateFormValues(request):
         fields_valid = False
 
 
-    if not request.POST.get('recurring_event'):
+    if not request.POST.get('recurring_event') and not profile.user.is_individual:
         messages.error(request, "Please select event recurrence.")
         date_valid = False
     else:
-        if request.POST['recurring_event'] == "Yes":
+        if request.POST.get('recurring_event') == "Yes" and not profile.user.is_individual:
             selected_days = request.POST.getlist('recurring_days')
             if len(selected_days) < 1:
                 messages.error(request, "Please select event days.")
@@ -577,6 +593,8 @@ def modify_individual(response, individual):
 
     if "pronoun" in response:
         individual.pronouns = response["pronoun"].strip() if response["pronoun"] else ""
+    if "school" in response:
+        individual.school = response["school"].strip() if response["school"] else ""
 
     if "city" in response:
         individual.city = response["city"].strip() if response["city"] else ""
@@ -718,6 +736,13 @@ def user_profile(request):
     context['locations'] = locations
     context['user_avaiability'] = user_avaiability
     context["preferred_pronoun"] = Pronoun.objects.all()
+    context["schools"] = School.objects.all()
+    context["user_invite_count"] = Invite.objects.filter(profile=profile).count()
+    context["event_created"] = master_table.objects.filter(created_by=profile).count()
+    user_orders = OrderItems.objects.filter(profile=profile).annotate(
+        total_time=Sum(F('event__total_time'))
+    )
+    context["time_spent"] = user_orders.first().total_time if user_orders.exists() else 0
     return render(request, 'registration/individual_view.html', context)
 
 
@@ -743,6 +768,7 @@ def user_profile_submit(request):
         context['locations'] = locations
         context['user_avaiability'] = user_avaiability
         context["preferred_pronoun"] = Pronoun.objects.all()
+        context["schools"] = School.objects.all()
         return render(request, 'registration/individual_view.html', context)
     else:
 
@@ -1249,7 +1275,7 @@ def home(request):
 
     recommended_events = []
     if request.user.is_authenticated:
-        recommended_events = get_recommended_events(request)
+        recommended_events = list(master_table.objects.all())  # get_recommended_events(request)
 
     selected_events_types = []
     if request.GET.get('events_types'):
@@ -1364,6 +1390,7 @@ def home(request):
         'selected_events_types': selected_events_types,
         'profile': profile
     }
+    print(context)
 
     return render(request, 'EventsApp/home.html', context)
 

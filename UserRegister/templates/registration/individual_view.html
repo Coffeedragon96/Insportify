@@ -89,7 +89,15 @@
     .fitbit-row{
         display: flex;
         justify-content: space-between;
-        display: none !important;
+        padding: 0 16%;
+        margin-bottom: 20px;
+        {% comment %} display: none !important; {% endcomment %}
+    }
+
+    .fitbit-row p{
+        text-align: center;
+        margin-top: 5px;
+        font-weight: 500;    
     }
 
     .pie, .pie svg {
@@ -97,37 +105,77 @@
         height: 170px !important;
     }
 
+    @media only screen and (max-width: 600px) {
+        .pie, .pie svg {
+            width: 75px !important;
+            height: 75px !important;
+        }
+
+        .fitbit-row{
+            padding: 0 0;
+        }
+
+        .fitbit-row p{
+            text-align: center;
+            margin-top: 5px;
+            font-weight: 500;
+            font-size: 11px;
+        }
+    }
+
+    .circle-number {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.5rem; /* Adjust as needed */
+        font-weight: bold;
+        color: #333; /* Custom color */
+        pointer-events: none; /* So it doesn't interfere with interactions */
+    }
+
+    .pie-text-1, .pie-text-2, .pie-text-3, .pie-text-4{
+        display: none !important;
+    }
+
 </style>
 
-<div class="row col-lg-6 col-md-12 mx-auto col-6">
+<div class="row col-lg-6 col-md-12 mx-auto col-12">
     <div class="flex progress-wrapper">
-        <input type="range" value="75" min="0" max="100" step="1" hidden>
+        <input type="range" value="75" min="0" max="1000" step="1" hidden>
     </div>
     <div class="fitbit-row">
             <section>
             <div class="flex info">
             </div>
-            <div class="pie" data-pie='{ "percent": 75 }'>
+            <div class="pie" data-pie='{ "percent": 100 }'>
+                <div class="circle-number">{{ user_invite_count }}</div>
             </div>
+            <p>Event Joined</p>
             </section>
             <section>
             <div class="flex info">
             </div>
-            <div class="pie" data-pie='{ "percent": 15 }'>
+            <div class="pie" data-pie='{ "percent": 100 }'>
+                <div class="circle-number">{{ event_created }}</div>
             </div>
-        </section>
-            <section>
-            <div class="flex info">
-            </div>
-            <div class="pie" data-pie='{ "percent": 65 }'>
-            </div>
+            <p>Event Created</p>
         </section>
             <section>
             <div class="flex info">
             </div>
             <div class="pie" data-pie='{ "percent": 100 }'>
+                <div class="circle-number">{{ time_spent }}</div>
             </div>
+            <p>Time Spent</p>
         </section>
+            {% comment %} <section>
+            <div class="flex info">
+            </div>
+            <div class="pie" data-pie='{ "percent": 100 }'>
+                <div class="circle-number">75</div>
+            </div>
+        </section> {% endcomment %}
     </div>
 </div>
 
@@ -199,6 +247,15 @@
                         </div>
 
                         <div class="form-row p-2">
+                            <select name="school" id="school" class="form-select" title="school">
+                                <option value="0">Choose School</option>
+                                {% for school in schools %}
+                                <option value="{{ school.id }}" {% if individual.school == school.id|stringformat:"i" %} selected {% endif %}>{{school.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-row p-2">
                             <span class="error-message" id="medicalInfoError"></span>
                             <input type="text" class="form-control" name="medical_info" placeholder="any pertinent medical information you think important"
                                    value="{% if individual.medical_info %} {{individual.medical_info}} {% endif %}"/>
@@ -238,6 +295,7 @@
                             <label for="No"><input type="radio" id="No" name="is_student" value="No"
                                    {% if individual.is_student == "No" %} checked {% endif %}> No</input></label>
                         </div>
+
                         <div class="form-row p-2">
                             <label>Have you ever suffered concussion?</label>
                             <br>
@@ -837,6 +895,16 @@
         });
     });
 
+    function getAge(dateString) {
+        var today = new Date();
+        var birthDate = new Date(dateString);
+        var age = today.getFullYear() - birthDate.getFullYear();
+        var m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    }
     $("#position").change(function () {
         var selected_position_value = $("#position option:selected");
         var selected_position_text = selected_position_value.text();
@@ -862,7 +930,15 @@
 
                     var html_data = '<option value="" selected disabled>* Choose Skill</option>';
                     data.forEach(function (data) {
-                        html_data += `<option value="${data.skill_type}">${data.skill_type}</option>`;
+                        if (data.skill_type == "Pro-Bound" && selected_position_text == "Athlete") {
+                            var birthdate = $("input[name=dob]").val();
+                            var age = getAge(birthdate);
+                            if (age >= 12 && age <= 25) {
+                                html_data += `<option value="${data.skill_type}">${data.skill_type}</option>`;
+                            }
+                        } else{
+                            html_data += `<option value="${data.skill_type}">${data.skill_type}</option>`;
+                        }
                     });
                     console.log(html_data);
                     $("#skill").html(html_data);
@@ -1584,10 +1660,11 @@ im.mask(selector);
         const range = document.querySelector('[type="range"]');
       
         range.addEventListener("input", (e) => {
+          const customValue = e.target.value;
           pie.forEach((el, index) => {
             const options = {
               index: index + 1,
-              percent: e.target.value
+              percent: customValue
             };
             circle.animationTo(options);
           });

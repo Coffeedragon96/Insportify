@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-xxl-5 col-xl-6 col-lg-8 col-md-9 col-sm-12 mx-auto justify-content-center">
+        <div class="card shadow col-12">
+            <h3 class="card-header text-center text-white"
+                style="background: linear-gradient(170deg, rgba(71,176,239,1) 35%, rgba(13,223,246,1) 100%);">First time in
+                Insportify....</h3>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-4 text-center register-type">
+                        <img src="/media/images/Individual.jpg" alt="Logo" style="width: 200px;"/>
+                        <a type="button" class="btn my-3 shadow rounded text-white" style="background: #ff6f3d;"
+                           href="/users/subscribe?plan=free">
+                            Free Member {% if user.is_individual %}- Activated {% endif %}</a>
+                        <ul style="text-align: initial;">
+                            <li>
+                                Find places to play, what ever, where ever, when ever for free
+                            </li>
+                            <li>
+                                Create 2 events a week
+                            </li>
+                            <li>
+                                <mark style="background-color: #fce9e3; font-weight: bold;">FREE</mark>
+                            </li>
+                        </ul>
+                    </div>
+                     <div class="col-lg-4 text-center register-type">
+                        <img src="/media/images/Mvp.jpg" alt="Logo" style="width: 200px;"/>
+                         <a type="button" class="btn my-3 shadow rounded text-white" style="background: #ff6f3d;"
+                            href="/users/subscribe?plan=mvp">
+                             MVP Member {% if user.is_mvp %}- Activated {% endif %}</a>
+                         <ul style="text-align: initial;">
+                             <li>
+                                 Let your teammates know who you are and what you do
+                             </li>
+                             <li>
+                                 Create 3 events a week
+                             </li>
+                             <li>
+                                 <mark style="background-color: #fce9e3; font-weight: bold;">$10 mon / $100 yr.</mark>
+                            </li>
+                         </ul>
+                    </div>
+                    <div class="col-lg-4 text-center register-type">
+                        <img src="/media/images/OrganizationIcon.png" alt="Logo" style="width: 200px;"/>
+                        <a type="button" class="btn my-3 shadow rounded text-white" style="background: #ff6f3d;"
+                           href="/users/subscribe?plan=org">I am an
+                            Organization {% if user.is_organization %}- Activated {% endif %}</a>
+                        <ul style="text-align: initial;">
+                            <li>
+                                Create unlimited events
+                            </li>
+                            <li>
+                                Get added to personal directories
+                            </li>
+                            <li>
+                                Never be out of conversation
+                            </li>
+                            <li>
+                                <mark style="background-color: #fce9e3; font-weight: bold;">Join to get a quote</mark>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .register-type{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+</style>
+{% endblock %}

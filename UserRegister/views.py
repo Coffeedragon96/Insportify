@@ -25,6 +25,24 @@ from django.urls import reverse
 def register(request):
     return render(request, 'registration/register_final.html')
 
+def subscription_view(request):
+    return render(request, 'registration/subscription_view.html', {"user": request.user})
+
+def user_subscribe(request):
+    plan = request.GET.get('plan')
+    user: User = request.user
+    user.is_individual = False
+    user.is_mvp = False
+    user.is_organization = False
+    if plan == 'free':
+        user.is_individual = True
+    elif plan == 'mvp':
+        user.is_mvp = True
+    elif plan == 'org':
+        user.is_organization = True
+    user.save()
+    return redirect(f"{reverse('UserRegister:subscription_view')}?f=true")
+
 
 def activate(request, uidb64, token):
     try:
@@ -57,9 +75,10 @@ class individual_register(CreateView):
 
     def form_valid(self, form):
         if form.is_valid():
-            user = form.save()
+            user: User = form.save()
             user.is_active = False
             user.is_mvp = False  # self.request.POST.get('is_mvp') == "on"
+            user.is_organization = False
             user.save()
 
             is_localhost = get_current_site(self.request).domain in ['localhost:8000', '127.0.0.1:8000']
@@ -99,9 +118,10 @@ class mvp_register(CreateView):
     def form_valid(self, form):
         localhost = '127.0.0.1:8000'
         if form.is_valid():
-            user = form.save()
+            user: User = form.save()
             user.is_active = False
             user.is_mvp = True
+            user.is_organization = False
             user.save()
 
             is_localhost = get_current_site(self.request).domain == localhost
@@ -139,8 +159,10 @@ class organization_register(CreateView):
     def form_valid(self, form):
         localhost = '127.0.0.1:8000'
         if form.is_valid():
-            user = form.save()
+            user: User = form.save()
             user.is_active = False
+            user.is_mvp = False
+            user.is_organization = True
             user.save()
             is_localhost = get_current_site(self.request).domain == localhost
 

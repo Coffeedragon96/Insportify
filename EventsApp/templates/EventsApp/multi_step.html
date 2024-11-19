@@ -308,7 +308,11 @@
                                 <input type="text" class="form-control date-except"  name="datetimes_exceptions" id="datetimes_exceptions" value="{{values.datetimes_exceptions}}"/>
                             </div>
                         </div>
-                        <div class="form-row p-2" id="single_dates" style="display:None">
+                        {% if user.is_individual %}
+                        <div class="form-row p-2" id="single_dates">
+                        {% else %}
+                        <div class="form-row p-2" id="single_dates" style=" display:None ">
+                        {% endif %}
                             <label>* Select Event Date &nbsp &nbsp</label>
                             <div class="form-group row p-2">
                                 <div class="col-md-4">

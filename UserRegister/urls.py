@@ -7,6 +7,8 @@ app_name = 'UserRegister'
 
 urlpatterns = [
     path('register/', views.register, name='register'),
+    path('subscription/', views.subscription_view, name='subscription_view'),
+    path("subscribe/", views.user_subscribe, name="user_subscribe"),
     path('login/', views.login_request, name='login'),
     path('logout/', views.logout_request, name='logout'),
     path('individual_register/', views.individual_register.as_view(), name='individual_register'),
