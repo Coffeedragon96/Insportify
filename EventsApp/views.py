@@ -1281,7 +1281,7 @@ def home(request):
 
     recommended_events = []
     if request.user.is_authenticated:
-        recommended_events = list(master_table.objects.all())  # get_recommended_events(request)
+        recommended_events = get_recommended_events(request)
 
     selected_events_types = []
     if request.GET.get('events_types'):
