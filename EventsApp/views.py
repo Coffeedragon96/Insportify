@@ -742,7 +742,13 @@ def user_profile(request):
     user_orders = OrderItems.objects.filter(profile=profile).annotate(
         total_time=Sum(F('event__total_time'))
     )
-    context["time_spent"] = user_orders.first().total_time if user_orders.exists() else 0
+    time_spent_in_hour = user_orders.first().total_time if user_orders.exists() else 0
+    context["time_spent"] = str(time_spent_in_hour) + " hours"
+    if time_spent_in_hour > 24:
+        time_spent_in_day = int(time_spent_in_hour / 24)
+        time_spent_in_hour = time_spent_in_hour % 24
+        context["time_spent"] = str(time_spent_in_day) + " days " + str(time_spent_in_hour) + " hours"
+    
     return render(request, 'registration/individual_view.html', context)
 
 
@@ -1398,10 +1404,13 @@ def home(request):
 def sort_events_by_date(events):
     def getDate(event):
         datetimes = event.datetimes if event.datetimes else event.current_datetimes
+        if not datetimes:  # Skip if no valid datetime source is found
+            return None
         time = datetimes.split("-")
         datetime_obj = datetime.strptime(time[0].strip(), '%m/%d/%Y %I:%M %p')
         return datetime_obj
 
+    events = [event for event in events if getDate(event) is not None]
     events.sort(key=lambda x: getDate(x), reverse=False)
 
     return

@@ -9,13 +9,15 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-import os
 from pathlib import Path
-import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from django.contrib import messages
 from dotenv import load_dotenv
+import os
 load_dotenv()
+
+from dotenv import dotenv_values
+env_config = dotenv_values(".env")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,10 +25,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = env_config.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG')
+DEBUG = env_config.get('DEBUG')
+
+print(DEBUG)
+print(env_config.get('DEBUG'))
 
 ALLOWED_HOSTS = ['35.182.44.234', '127.0.0.1', 'localhost', 'insportify.com:8000', 'www.insportify.com', '*.insportify.*', 'insportify.com', 'https://localhost']
 
@@ -88,11 +93,11 @@ AUTH_USER_MODEL = 'EventsApp.User'
 
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_HOST = env_config.get('EMAIL_HOST')
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = env_config.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env_config.get('EMAIL_HOST_PASSWORD')
 
 # Added to confirm the csrf token does not fail for Safari on iPhone
 SESSION_COOKIE_SECURE = False
@@ -106,11 +111,11 @@ CSRF_COOKIE_SECURE = False
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DATABASE_NAME', 'insportify'),
-        'USER': os.environ.get('DATABASE_USER', 'postgres'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'admin'),
-        'HOST': os.environ.get("DATABASE_HOST", 'localhost'),
-        'PORT': os.environ.get('DATABASE_PORT', '5432'),
+        'NAME': env_config.get('DATABASE_NAME', 'insportify'),
+        'USER': env_config.get('DATABASE_USER', 'postgres'),
+        'PASSWORD': env_config.get('DATABASE_PASSWORD', 'admin'),
+        'HOST': env_config.get("DATABASE_HOST", 'localhost'),
+        'PORT': env_config.get('DATABASE_PORT', '5432'),
     }
 }
 
@@ -173,11 +178,11 @@ MESSAGE_TAGS = {
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 
 ############# Stripe Configurations ################
-STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
-STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
+STRIPE_PUBLISHABLE_KEY = env_config.get('STRIPE_PUBLIC_KEY')
+STRIPE_SECRET_KEY = env_config.get('STRIPE_SECRET_KEY')
 
 ############ ReCaptcha Configurations ################
-RECAPTCHA_PUBLIC_KEY = os.environ.get('GOOGLE_RECAPTCHA_PUBLIC_KEY')
-RECAPTCHA_PRIVATE_KEY = os.environ.get('GOOGLE_RECAPTCHA_PRIVATE_KEY')
+RECAPTCHA_PUBLIC_KEY = env_config.get('GOOGLE_RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_PRIVATE_KEY = env_config.get('GOOGLE_RECAPTCHA_PRIVATE_KEY')
 
 RECAPTCHA_PROXY = {'http': 'http://127.0.0.1:8000', 'https': 'https://127.0.0.1:8000'}
