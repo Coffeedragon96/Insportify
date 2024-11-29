@@ -744,7 +744,7 @@ def user_profile(request):
     )
     time_spent_in_hour = user_orders.first().total_time if user_orders.exists() else 0
     context["time_spent"] = str(time_spent_in_hour) + " hours"
-    if time_spent_in_hour > 24:
+    if time_spent_in_hour and time_spent_in_hour > 24:
         time_spent_in_day = int(time_spent_in_hour / 24)
         time_spent_in_hour = time_spent_in_hour % 24
         context["time_spent"] = str(time_spent_in_day) + " days " + str(time_spent_in_hour) + " hours"
