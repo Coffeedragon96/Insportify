@@ -117,11 +117,15 @@
                                 <option value="" selected="selected">* Select Event Type</option>
                                 <option value="Camp" {% if values.event_type == 'Camp' %}selected="selected"{% endif %}>Camp</option>
                                 <option value="Charity" {% if values.event_type == 'Charity' %}selected="selected"{% endif %}>Charity</option>
+                                <option value="Combine" {% if values.event_type == 'Combine' %}selected="selected"{% endif %}>Combine</option>
+                                <option value="Conference" {% if values.event_type == 'Conference' %}selected="selected"{% endif %}>Conference</option>
                                 <option value="Conditioning" {% if values.event_type == 'Conditioning' %}selected="selected"{% endif %}>Conditioning</option>
                                 <option value="Development" {% if values.event_type == 'Development' %}selected="selected"{% endif %}>Development</option>
+                                <option value="Equipment Demo" {% if values.event_type == 'Equipment Demo' %}selected="selected"{% endif %}>Equipment Demo</option>
                                 <option value="Game/Session" {% if values.event_type == 'Game/Session' %}selected="selected"{% endif %}>Game/Session</option>
                                 <option value="Online" {% if values.event_type == 'Online' %}selected="selected"{% endif %}>Online</option>
                                 <option value="Registration" {% if values.event_type == 'Registration' %}selected="selected"{% endif %}>Registration</option>
+                                <option value="Resort Event" {% if values.event_type == 'Resort Event' %}selected="selected"{% endif %}>Resort Event</option>
                                 <option value="Social" {% if values.event_type == 'Social' %}selected="selected"{% endif %}>Social</option>
                                 <option value="Tournament" {% if values.event_type == 'Tournament' %}selected="selected"{% endif %}>Tournament</option>
                             </select>
@@ -134,7 +138,7 @@
                             <label for="Coed"><input type="radio" id="Coed" name="gender" value="Coed" {% if values.gender == 'Coed' or values.gender == None %}checked{% endif %}> Coed </input></label>
                             </div>
                         </div>
-                        {% if not user.is_individual or user.is_individual and user.is_mvp %}
+                        {% if user.is_individual or user.is_individual and user.is_mvp %}
                           <div class="form-row p-2">
                               <label>* Is this a recurring event? &nbsp &nbsp</label>
                               <br>
