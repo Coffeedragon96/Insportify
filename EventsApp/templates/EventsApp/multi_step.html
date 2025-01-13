@@ -138,7 +138,7 @@
                             <label for="Coed"><input type="radio" id="Coed" name="gender" value="Coed" {% if values.gender == 'Coed' or values.gender == None %}checked{% endif %}> Coed </input></label>
                             </div>
                         </div>
-                        {% if user.is_individual or user.is_individual and user.is_mvp %}
+                        {% if not user.is_individual or user.is_individual and user.is_mvp %}
                           <div class="form-row p-2">
                               <label>* Is this a recurring event? &nbsp &nbsp</label>
                               <br>
