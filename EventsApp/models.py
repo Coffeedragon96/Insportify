@@ -71,6 +71,12 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.email
 
+    def get_organization(self) -> Optional["Organization"]:
+        try:
+            return self.organization_profile
+        except Organization.DoesNotExist:
+            return None
+
 
 class Individual(models.Model):
     profile = models.OneToOneField(Profile, on_delete=models.CASCADE, primary_key=True)
@@ -152,7 +158,7 @@ class master_table(models.Model):
 
 
 class Organization(models.Model):
-    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, primary_key=True)
+    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, primary_key=True, related_name="organization_profile")
     organization_name = models.CharField(max_length=50, null=True)
     parent_organization_name = models.CharField(max_length=50, null=True)
     registration_no = models.CharField(max_length=50, null=True)
@@ -331,10 +337,12 @@ class SportsImage(models.Model):
         return cast(str, self.sport)
     
     @staticmethod
-    def get_sport_image(event: master_table, organization: Optional[Organization] = None) -> str:
-        sport_images = SportsImage.objects.filter(sport=event.sport_type)
-        if organization and sport_images.filter(organization=organization).exists():
-            sport_images = sport_images.filter(organization=organization)
+    def get_sport_image(event: master_table) -> str:
+        organization = event.created_by.get_organization()
+        sport_images = SportsImage.objects.filter(sport=event.sport_type, organization=None)
+        organization_sport_images = SportsImage.objects.filter(organization=organization, sport=event.sport_type)
+        if organization and organization_sport_images.exists():
+            sport_images = organization_sport_images
 
         if not len(sport_images):
             return "/media/images/Multisport.jpg"
