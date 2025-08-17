@@ -7,6 +7,8 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
+import random
+from typing import cast, List
 
 import openpyxl
 import stripe
@@ -25,6 +27,10 @@ from django.views.decorators.csrf import csrf_exempt
 from openpyxl import Workbook
 from icalendar import Calendar, Event, vCalAddress, vText
 from django.urls import reverse
+from django.http import HttpRequest, HttpResponse
+from django.http import JsonResponse
+
+
 # from .tasks import delete_bots
 
 from Insportify import settings
@@ -887,28 +893,32 @@ def delete_user_location(request):
             return JsonResponse({'status': 'Some error occurred!'}, safe=False)
 
 
-def get_selected_sports_type(request):
+def get_selected_sports_type(request: HttpRequest) -> JsonResponse:
     data = {}
-    if request.method == "POST":
-        selected_category = request.POST['selected_category_text']
-        try:
-            selected_type = SportsType.objects.filter(sports_category__sports_catgeory_text=selected_category)
-            # print(selected_type)
-        except Exception:
-            data['error_message'] = 'error'
-            return JsonResponse(data)
-        return JsonResponse(list(selected_type.values('pk', 'sports_type_text')), safe=False)
+    if request.method != "POST":
+        return JsonResponse(data)
+
+    selected_category = request.POST['selected_category_text']
+    try:
+        selected_type = SportsType.objects.filter(sports_category__sports_catgeory_text=selected_category)
+    except Exception:
+        data['error_message'] = 'error'
+        return JsonResponse(data)
+    return JsonResponse(list(selected_type.values('pk', 'sports_type_text')), safe=False)
+    
 
 
-def get_sports_type(request):
+def get_sports_type(request: HttpRequest) -> JsonResponse:
     data = {}
-    if request.method == "GET":
-        try:
-            sports_type = SportsType.objects.all().order_by('sports_type_text')
-        except Exception:
-            data['error_message'] = 'error'
-            return JsonResponse(data)
-        return JsonResponse(list(sports_type.values('pk', 'sports_type_text')), safe=False)
+    if request.method != "GET":
+        return JsonResponse(data)
+    
+    try:
+        sports_type = SportsType.objects.all().order_by('sports_type_text')
+    except Exception:
+        data['error_message'] = 'error'
+        return JsonResponse(data)
+    return JsonResponse(list(sports_type.values('pk', 'sports_type_text')), safe=False)
 
 
 def get_selected_sports_position_and_skill(request):
@@ -1228,29 +1238,23 @@ def get_client_ip(request):
 
 
 def home(request):
-    # print("Home")
-
-    if request.user.is_authenticated:
-        if not request.user.profile_status:
-            print('Redirecting to user profile...')
-            return redirect('EventsApp:user_profile')
-
-    if request.user.is_authenticated and request.user.is_organization:
+    if request.user.is_authenticated and request.user.is_organization and not request.user.profile_status:
         return redirect('EventsApp:organization_profile')
+
+    if request.user.is_authenticated and not request.user.profile_status:
+        print('Redirecting to user profile...')
+        return redirect('EventsApp:user_profile')
 
     sports = SportsType.objects.values('pk', 'sports_type_text').order_by('sports_type_text')
 
     advertisements = get_advertisements(request)
     advertisements = list(advertisements)
 
+    profile = None
     if request.user.is_authenticated:
         profile = get_profile_from_user(request.user)
-    else:
-        profile = None
-
 
     if request.user.is_authenticated and request.user.is_individual:
-
         user_sports = Secondary_SportsChoice.objects.filter(profile=profile).values('sport_type')
         for item in sports:
             flag = False
@@ -1260,12 +1264,12 @@ def home(request):
 
             if not flag:
                 sports = sports.exclude(sports_type_text=item['sports_type_text'])
-
         user_loc = Extra_Loctaions.objects.filter(profile=profile).values_list('city', flat=True)
         venues = Venues.objects.values('pk', 'vm_name', 'vm_venuecity').filter(
             vm_venuecity__in=list(user_loc)).order_by('vm_name')
     else:
         venues = Venues.objects.values('pk', 'vm_name').order_by('vm_name')
+
     cities = Venues.objects.values('vm_venuecity').distinct().order_by('vm_venuecity')
 
     events = master_table.objects.all()
@@ -1353,11 +1357,7 @@ def home(request):
     recommended_registrationList = []
     if request.user.is_authenticated:
         for event in recommended_events:
-            sport_img = SportsImage.objects.filter(sport=event.sport_type).values("img")
-            if len(sport_img):
-                event.sport_logo = "/media/" + sport_img[0]["img"]
-            else:
-                event.sport_logo = "/media/images/Multisport.jpg"
+            event.sport_logo = SportsImage.get_sport_image(event=event)
 
         for event in recommended_events:
             if event.registration_type == "Registration":
@@ -1366,11 +1366,7 @@ def home(request):
                 recommended_drop_in.append(event)
 
     for event in events:
-        sport_img = SportsImage.objects.filter(sport=event.sport_type).values("img")
-        if len(sport_img):
-            event.sport_logo = "/media/" + sport_img[0]["img"]
-        else:
-            event.sport_logo = "/media/images/Multisport.jpg"
+        event.sport_logo = SportsImage.get_sport_image(event=event)
 
     drop_in_eventList = []
     registrationList = []
@@ -1416,7 +1412,7 @@ def sort_events_by_date(events):
     return
 
 
-def get_events_by_time(events):
+def get_events_by_time(events: List[master_table]) -> List[master_table]:
     events = list(events)
     full_events_list = []
     for event in events:
@@ -1618,7 +1614,7 @@ def extract_event_datetime(event):
     return event_date, event_start_time, event_end_time
 
 
-def format_time(events):
+def format_time(events: List[master_table]) -> List[master_table]:
 
     for event in events:
         if event.datetimes:
@@ -1652,7 +1648,7 @@ def format_time_helper(time):
     return str_datetime
 
 
-def get_events_by_selected_date(events_list, selected_date):
+def get_events_by_selected_date(events_list, selected_date) -> List[master_table]:
     new_events_list = []
     for event in events_list[:]:
         if event.current_datetimes:

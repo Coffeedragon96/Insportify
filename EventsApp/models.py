@@ -4,7 +4,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import datetime
 from .validator import image_restriction
-
+from typing import cast, Optional
+import random
 
 class UserManager(BaseUserManager):
     """Define a model manager for User model with no username field."""
@@ -324,9 +325,22 @@ class Secondary_SportsChoice(models.Model):
 class SportsImage(models.Model):
     sport = models.CharField(max_length=250, default=None, blank=True, null=True)
     img = models.ImageField(upload_to='images/', default=None, blank=True, null=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.sport
+        return cast(str, self.sport)
+    
+    @staticmethod
+    def get_sport_image(event: master_table, organization: Optional[Organization] = None) -> str:
+        sport_images = SportsImage.objects.filter(sport=event.sport_type)
+        if organization and sport_images.filter(organization=organization).exists():
+            sport_images = sport_images.filter(organization=organization)
+
+        if not len(sport_images):
+            return "/media/images/Multisport.jpg"
+        
+        random_image_number = random.randint(0, len(sport_images) - 1)
+        return "/media/" + sport_images.values("img")[random_image_number]["img"]
 
 
 class OrderItems(models.Model):

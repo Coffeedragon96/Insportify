@@ -11,14 +11,19 @@ admin.site.register(SportsType)
 admin.site.register(Individual)
 admin.site.register(Organization)
 admin.site.register(Logo)
-admin.site.register(SportsImage)
+admin.site.register(
+    SportsImage, 
+    list_display=("id", "sport", "img", "organization"),
+    list_filter=("sport",)
+)
 admin.site.register(Pronoun)
 admin.site.register(School)
 
 
 class UserAdmin(admin.ModelAdmin):
     list_filter = ('is_individual', 'is_organization', 'profile_status',)
-    list_display = ('email', 'first_name', 'is_active', 'profile_status',)
+    list_display = ('email', 'first_name', 'is_active', 'profile_status', "is_mvp", "is_individual", "is_organization")
+    search_fields = ("email",)
 
 admin.site.register(User, UserAdmin)
 

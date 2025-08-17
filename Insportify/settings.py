@@ -30,9 +30,6 @@ SECRET_KEY = env_config.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_config.get('DEBUG')
 
-print(DEBUG)
-print(env_config.get('DEBUG'))
-
 ALLOWED_HOSTS = ['35.182.44.234', '127.0.0.1', 'localhost', 'insportify.com:8000', 'www.insportify.com', '*.insportify.*', 'insportify.com', 'https://localhost']
 
 # Application definition
